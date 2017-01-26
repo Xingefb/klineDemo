@@ -61,9 +61,8 @@
     chartView.dragDecelerationFrictionCoef = 0.9;//拖拽后惯性效果的摩擦系数(0~1)，数值越小，惯性越不明显
     ChartLegend *l = chartView.legend;
     l.enabled = NO;
-    
     //[chartView.xAxis setAxisLineWidth:30];
-    chartView.borderLineWidth = 30;
+    
 }
 
 - (void)viewDidLoad
@@ -134,6 +133,7 @@
         entity.close = [dic[@"Close"] doubleValue];
         [self.date addObject:[NSString stringWithFormat:@"%@",dic[@"Data"]]];
         entity.x = i;
+
         [data addObject:entity];
     }
     
@@ -148,6 +148,7 @@
     
     set1.increasingColor = [UIColor greenColor];
     set1.increasingFilled = NO;
+
     
     // 隐藏柱形图上边的数值
     set1.drawValuesEnabled = NO;
@@ -173,6 +174,7 @@
         NSDictionary *dic = tmp[i];
         double y = 100-[dic[@"Low"] doubleValue];
         BarChartDataEntry * entity = [[BarChartDataEntry alloc]initWithX:i y:y];
+    
         [data addObject:entity];
         
         if (y > 0) {
@@ -190,7 +192,6 @@
     set.colors = colors;
     
     BarChartData *chartdata = [[BarChartData alloc] initWithDataSet:set];
-
     return chartdata;
     
 }
@@ -311,6 +312,7 @@
         
         _chartView.xAxis.axisMaximum = data.xMax + 0.25;
         _chartView.data = data;
+        
         //[_chartView animateWithXAxisDuration:0.1];
         
         _chartView1.data = data;
@@ -324,9 +326,7 @@
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
 
-    UITouch *touch = [touches anyObject];
-    CGPoint point = [touch locationInView:self.view];
-  //  NSLog(@" - %f",point.x);
+ 
     
 }
 
@@ -360,6 +360,8 @@
 
 - (void)chartScaled:(ChartViewBase * _Nonnull)chartView scaleX:(CGFloat)scaleX scaleY:(CGFloat)scaleY {
     
+    NSLog(@" - %f",scaleX);
+    
     [self scrollWithChartView:chartView];
 
 }
@@ -367,8 +369,6 @@
 - (void)chartTranslated:(ChartViewBase * _Nonnull)chartView dX:(CGFloat)dX dY:(CGFloat)dY {
 
     [self scrollWithChartView:chartView];
-
-    NSLog(@" - %f",dX);
 
 }
 - (void)chartValueNothingSelected:(ChartViewBase * __nonnull)chartView
