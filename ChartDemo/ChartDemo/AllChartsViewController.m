@@ -8,7 +8,6 @@
 
 #import "AllChartsViewController.h"
 #import <Charts/Charts-Swift.h>
-
 #import <AFNetworking/AFNetworking.h>
 
 #define ITEM_COUNT 12
@@ -16,14 +15,14 @@
 @interface AllChartsViewController () <ChartViewDelegate, IChartAxisValueFormatter>
 {
     NSArray<NSString *> *months;
-
 }
 
+@property (weak, nonatomic) IBOutlet CombinedChartView *chartView1;
 @property (weak, nonatomic) IBOutlet CombinedChartView *chartView;
+
 @property (nonatomic ) NSMutableArray *data;
 @property (nonatomic ) NSMutableArray *date;
 @property (nonatomic,strong) UILabel * markY;
-
 
 @end
 
@@ -41,6 +40,32 @@
     return _markY;
 }
 
+- (void)configChartViewWith:(CombinedChartView *)chartView {
+
+    chartView.delegate = self;
+    chartView.noDataText = @"";
+    chartView.scaleYEnabled = NO;
+    chartView.chartDescription.enabled = NO;
+    chartView.drawGridBackgroundEnabled = NO;
+    chartView.drawBarShadowEnabled = NO;
+    chartView.highlightFullBarEnabled = NO;
+    chartView.drawOrder = @[
+                             @(CombinedChartDrawOrderBar),
+                             @(CombinedChartDrawOrderCandle),
+                             @(CombinedChartDrawOrderLine)
+                             ];
+    chartView.pinchZoomEnabled = YES;//手势缩放
+    chartView.doubleTapToZoomEnabled = NO;//取消双击缩放
+    chartView.dragEnabled = YES;//启用拖拽图标
+    chartView.dragDecelerationEnabled = YES;//拖拽后是否有惯性效果
+    chartView.dragDecelerationFrictionCoef = 0.9;//拖拽后惯性效果的摩擦系数(0~1)，数值越小，惯性越不明显
+    ChartLegend *l = chartView.legend;
+    l.enabled = NO;
+    
+    //[chartView.xAxis setAxisLineWidth:30];
+    chartView.borderLineWidth = 30;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -52,20 +77,9 @@
                @"Oct", @"Nov", @"Dec"
                ];
     
-    _chartView.delegate = self;
-    _chartView.chartDescription.enabled = NO;
-    _chartView.drawGridBackgroundEnabled = NO;
-    _chartView.drawBarShadowEnabled = NO;
-    _chartView.highlightFullBarEnabled = NO;
-    _chartView.drawOrder = @[
-                             @(CombinedChartDrawOrderBar),
-                             @(CombinedChartDrawOrderCandle),
-                             @(CombinedChartDrawOrderLine)
-                             ];
-    
-    ChartLegend *l = _chartView.legend;
-    l.enabled = NO;
-    _chartView.scaleYEnabled = NO;
+    [self configChartViewWith:_chartView];
+    [self configChartViewWith:_chartView1];
+
 //    l.wordWrapEnabled = YES;
 //    l.horizontalAlignment = ChartLegendHorizontalAlignmentCenter;
 //    l.verticalAlignment = ChartLegendVerticalAlignmentBottom;
@@ -87,11 +101,6 @@
 //    xAxis.labelPosition = XAxisLabelPositionBottom;
 //    xAxis.granularity = 1.0;
 //    xAxis.valueFormatter = self;
-    _chartView.pinchZoomEnabled = YES;//手势缩放
-    _chartView.doubleTapToZoomEnabled = NO;//取消双击缩放
-    _chartView.dragEnabled = YES;//启用拖拽图标
-    _chartView.dragDecelerationEnabled = YES;//拖拽后是否有惯性效果
-    _chartView.dragDecelerationFrictionCoef = 0.9;//拖拽后惯性效果的摩擦系数(0~1)，数值越小，惯性越不明显
     
     ChartMarkerView *markerY = [[ChartMarkerView alloc] init];
     markerY.offset = CGPointMake(-999, -8);
@@ -179,7 +188,6 @@
     BarChartDataSet *set = [[BarChartDataSet alloc] initWithValues:data label:nil];
     set.drawValuesEnabled = NO;//禁止柱形图 数字的显示
     set.colors = colors;
-    
     
     BarChartData *chartdata = [[BarChartData alloc] initWithDataSet:set];
 
@@ -297,14 +305,16 @@
         
         CombinedChartData *data = [[CombinedChartData alloc] init];
 
-        data.lineData = [self loadData:arr];
-        data.barData = [self loadBarChartData:arr];
+        //data.lineData = [self loadData:arr];
+        //data.barData = [self loadBarChartData:arr];
         data.candleData = [self loadCandleChartData:arr];
         
         _chartView.xAxis.axisMaximum = data.xMax + 0.25;
         _chartView.data = data;
-        [_chartView animateWithXAxisDuration:0.5];
+        //[_chartView animateWithXAxisDuration:0.1];
         
+        _chartView1.data = data;
+        //[_chartView1 animateWithXAxisDuration:0.1];
         
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         
@@ -312,17 +322,58 @@
     
 }
 
-#pragma mark - ChartViewDelegate
-- (void)chartValueSelected:(ChartViewBase *)chartView entry:(ChartDataEntry *)entry highlight:(ChartHighlight *)highlight {
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
 
-    NSLog(@"chartValueSelected");
-    _markY.text = [NSString stringWithFormat:@"%ld%%",(NSInteger)entry.y];
-    [_chartView centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[_chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:1.0];
+    UITouch *touch = [touches anyObject];
+    CGPoint point = [touch locationInView:self.view];
+  //  NSLog(@" - %f",point.x);
     
 }
 
+- (void)scrollWithChartView:(ChartViewBase * _Nonnull)chartView {
+
+    ChartViewPortHandler *portHandler = chartView.viewPortHandler;
+    float scaleX = portHandler.scaleX;
+    float scaleY = portHandler.scaleY;
+    float xValue = portHandler.contentCenter.x;
+    float yValue = portHandler.contentCenter.y;
+    
+    [_chartView zoomWithScaleX:scaleX scaleY:scaleY x:xValue y:yValue];
+    CGAffineTransform matrix = portHandler.touchMatrix;
+    [portHandler setZoomWithScaleX:scaleX scaleY:scaleY x:xValue y:yValue];
+    [_chartView.viewPortHandler refreshWithNewMatrix:matrix chart:chartView invalidate:YES];
+    
+}
+
+#pragma mark - ChartViewDelegate
+- (void)chartValueSelected:(ChartViewBase *)chartView entry:(ChartDataEntry *)entry highlight:(ChartHighlight *)highlight {
+    
+    [chartView getMarkerPositionWithHighlight:highlight];
+    
+    _markY.text = [NSString stringWithFormat:@"%ld%%",(NSInteger)entry.y];
+    
+    // 点击 表格移动 至中心
+    [_chartView1 centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:0.3];
+    [_chartView centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:0.3];
+
+}
+
+- (void)chartScaled:(ChartViewBase * _Nonnull)chartView scaleX:(CGFloat)scaleX scaleY:(CGFloat)scaleY {
+    
+    [self scrollWithChartView:chartView];
+
+}
+
+- (void)chartTranslated:(ChartViewBase * _Nonnull)chartView dX:(CGFloat)dX dY:(CGFloat)dY {
+
+    [self scrollWithChartView:chartView];
+
+    NSLog(@" - %f",dX);
+
+}
 - (void)chartValueNothingSelected:(ChartViewBase * __nonnull)chartView
 {
+    
     NSLog(@"chartValueNothingSelected");
 }
 
