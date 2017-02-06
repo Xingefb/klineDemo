@@ -41,7 +41,7 @@
 }
 
 - (void)configChartViewWith:(CombinedChartView *)chartView {
-
+    
     chartView.delegate = self;
     chartView.noDataText = @"";
     chartView.scaleYEnabled = NO;
@@ -61,14 +61,40 @@
     chartView.dragDecelerationFrictionCoef = 0.9;//拖拽后惯性效果的摩擦系数(0~1)，数值越小，惯性越不明显
     ChartLegend *l = chartView.legend;
     l.enabled = NO;
-    //[chartView.xAxis setAxisLineWidth:30];
     
+    chartView.rightAxis.enabled = NO;
+    chartView.xAxis.enabled = NO;
+    
+    
+    //    l.wordWrapEnabled = YES;
+    //    l.horizontalAlignment = ChartLegendHorizontalAlignmentCenter;
+    //    l.verticalAlignment = ChartLegendVerticalAlignmentBottom;
+    //    l.orientation = ChartLegendOrientationHorizontal;
+    //    l.drawInside = NO;
+    //
+    //    ChartYAxis *rightAxis = _chartView.rightAxis;
+    //    rightAxis.drawGridLinesEnabled = NO;
+    //    rightAxis.axisMinimum = 0.0; // this replaces startAtZero = YES
+    //
+    ChartYAxis *leftAxis = chartView.leftAxis;
+    leftAxis.drawGridLinesEnabled = NO;
+    leftAxis.labelCount = 4;
+    leftAxis.labelPosition = YAxisLabelPositionInsideChart;
+    //
+    //    ChartXAxis *xAxis = _chartView.xAxis;
+    //    xAxis.labelPosition = XAxisLabelPositionBottom;
+    //    xAxis.granularity = 1.0;
+    //    xAxis.valueFormatter = self;
+    
+//    ChartViewPortHandler *portHandler = chartView.viewPortHandler;
+//    [portHandler setMaximumScaleX:3];
+//    [portHandler setChartDimensWithWidth:200 height:100];
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
+
     months = @[
                @"Jan", @"Feb", @"Mar",
                @"Apr", @"May", @"Jun",
@@ -78,28 +104,6 @@
     
     [self configChartViewWith:_chartView];
     [self configChartViewWith:_chartView1];
-
-//    l.wordWrapEnabled = YES;
-//    l.horizontalAlignment = ChartLegendHorizontalAlignmentCenter;
-//    l.verticalAlignment = ChartLegendVerticalAlignmentBottom;
-//    l.orientation = ChartLegendOrientationHorizontal;
-//    l.drawInside = NO;
-//    
-//    ChartYAxis *rightAxis = _chartView.rightAxis;
-//    rightAxis.drawGridLinesEnabled = NO;
-//    rightAxis.axisMinimum = 0.0; // this replaces startAtZero = YES
-//    
-//    ChartYAxis *leftAxis = _chartView.leftAxis;
-//
-//    leftAxis.drawZeroLineEnabled = YES;
-//    leftAxis.drawLabelsEnabled = NO;
-//    leftAxis.drawAxisLineEnabled = NO;
-//    leftAxis.drawGridLinesEnabled = NO;
-//
-//    ChartXAxis *xAxis = _chartView.xAxis;
-//    xAxis.labelPosition = XAxisLabelPositionBottom;
-//    xAxis.granularity = 1.0;
-//    xAxis.valueFormatter = self;
     
     ChartMarkerView *markerY = [[ChartMarkerView alloc] init];
     markerY.offset = CGPointMake(-999, -8);
@@ -165,7 +169,7 @@
     
     //倒序
     NSArray *tmp = [[array reverseObjectEnumerator] allObjects];
-    
+ 
     NSMutableArray *data = [NSMutableArray arrayWithCapacity:10];
     NSMutableArray *colors = [NSMutableArray arrayWithCapacity:10];
     
@@ -198,9 +202,14 @@
 
 - (LineChartData *)loadData:(NSArray *)array {
     
-    self.data  = [NSMutableArray arrayWithArray:array];
     //倒序
     NSArray *tmp = [[array reverseObjectEnumerator] allObjects];
+    
+    self.data = [NSMutableArray arrayWithArray:tmp];
+
+    CGFloat maxValue = [[tmp valueForKeyPath:@"@max.floatValue"] floatValue];
+    //CGFloat minValue = [[tmp valueForKeyPath:@"@min.floatValue"] floatValue];
+    NSLog(@" max %f",maxValue);
     
     NSMutableArray *data = [NSMutableArray arrayWithCapacity:10];
     NSMutableArray *data1 = [NSMutableArray arrayWithCapacity:10];
@@ -296,6 +305,25 @@
     
 }
 
+// MARK: set scale X fixed 20 px
+- (void)setCustomScaleWith:(NSArray *)data onChart:(CombinedChartView *)chartView{
+
+    // 如果宽度不够不让 缩放
+    ChartViewPortHandler *portHandler = chartView.viewPortHandler;
+    
+    if (self.data.count > chartView.viewPortHandler.chartWidth/15) {
+        chartView.scaleXEnabled = YES;
+        double width = chartView.viewPortHandler.chartWidth/data.count;
+        double scale = 15/width;
+        NSLog(@"%f %f",width,scale);
+        [portHandler setMaximumScaleX:scale];
+    }else {
+        chartView.scaleXEnabled = NO;
+        [portHandler setChartDimensWithWidth:15 * data.count height:portHandler.chartHeight];
+    }
+
+}
+
 - (void)loadDatas {
     
     [[AFHTTPSessionManager manager] GET:@"http://www.youbicaifu.com/index.php/home/tape/seleAdDayKline/type_id/17/code/601001" parameters:nil progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
@@ -303,12 +331,15 @@
 //        NSLog(@"%@",responseObject[@"data"][@"all_daykey"]);
         
         NSArray *arr = responseObject[@"data"][@"all_daykey"];
-        
+        NSMutableArray *array = [NSMutableArray arrayWithCapacity:10];
+        for (int i = 0; i < 30; i++) {
+            [array addObject:arr[i]];
+        }
         CombinedChartData *data = [[CombinedChartData alloc] init];
 
         //data.lineData = [self loadData:arr];
         //data.barData = [self loadBarChartData:arr];
-        data.candleData = [self loadCandleChartData:arr];
+        data.candleData = [self loadCandleChartData:array];
         
         _chartView.xAxis.axisMaximum = data.xMax + 0.25;
         _chartView.data = data;
@@ -318,31 +349,36 @@
         _chartView1.data = data;
         //[_chartView1 animateWithXAxisDuration:0.1];
         
+        [self setCustomScaleWith:array onChart:_chartView];
+        [self setCustomScaleWith:array onChart:_chartView1];
+
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         
     }];
     
 }
 
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+- (void)scrollWithChartView:(ChartViewBase * )chartView andType:(BOOL )isOne{
 
- 
+    CombinedChartView *chart;
+    if (isOne) {
+        chart = _chartView;
+    }else {
+        chart = _chartView1;
+    }
     
-}
-
-- (void)scrollWithChartView:(ChartViewBase * _Nonnull)chartView {
-
     ChartViewPortHandler *portHandler = chartView.viewPortHandler;
     float scaleX = portHandler.scaleX;
     float scaleY = portHandler.scaleY;
     float xValue = portHandler.contentCenter.x;
     float yValue = portHandler.contentCenter.y;
-    
-    [_chartView zoomWithScaleX:scaleX scaleY:scaleY x:xValue y:yValue];
+    [portHandler translateWithPt:CGPointMake(xValue, yValue)];
+    [chart zoomWithScaleX:scaleX scaleY:scaleY x:xValue y:yValue];
+
     CGAffineTransform matrix = portHandler.touchMatrix;
     [portHandler setZoomWithScaleX:scaleX scaleY:scaleY x:xValue y:yValue];
-    [_chartView.viewPortHandler refreshWithNewMatrix:matrix chart:chartView invalidate:NO];
-    
+    [chart.viewPortHandler refreshWithNewMatrix:matrix chart:chartView invalidate:NO];
+
 }
 
 #pragma mark - ChartViewDelegate
@@ -353,23 +389,28 @@
     _markY.text = [NSString stringWithFormat:@"%ld%%",(NSInteger)entry.y];
     
     // 点击 表格移动 至中心
-    [_chartView1 centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:0.3];
-    [_chartView centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:0.3];
+//    [_chartView1 centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:0.3];
+//    [_chartView centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:0.3];
 
 }
 
 - (void)chartScaled:(ChartViewBase * _Nonnull)chartView scaleX:(CGFloat)scaleX scaleY:(CGFloat)scaleY {
-    
-    NSLog(@" - %f",scaleX);
-    
-    [self scrollWithChartView:chartView];
+    if (chartView == _chartView1) {
+        [self scrollWithChartView:chartView andType:YES];
+    }else {
+        [self scrollWithChartView:chartView andType:NO];
+    }
 
 }
 
 - (void)chartTranslated:(ChartViewBase * _Nonnull)chartView dX:(CGFloat)dX dY:(CGFloat)dY {
 
-    [self scrollWithChartView:chartView];
-
+    if (chartView == _chartView1) {
+        [self scrollWithChartView:chartView andType:YES];
+    }else {
+        [self scrollWithChartView:chartView andType:NO];
+    }
+    NSLog(@"%f",dX);
 }
 - (void)chartValueNothingSelected:(ChartViewBase * __nonnull)chartView
 {
