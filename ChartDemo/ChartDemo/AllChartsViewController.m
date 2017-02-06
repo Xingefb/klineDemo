@@ -12,7 +12,7 @@
 
 #define ITEM_COUNT 12
 
-@interface AllChartsViewController () <ChartViewDelegate, IChartAxisValueFormatter>
+@interface AllChartsViewController () <ChartViewDelegate, IChartAxisValueFormatter,IChartHighlighter>
 {
     NSArray<NSString *> *months;
 }
@@ -28,6 +28,16 @@
 
 @implementation AllChartsViewController
 
+- (ChartHighlight *)getHighlightWithX:(CGFloat)x y:(CGFloat)y {
+
+    NSLog(@"*  %f",x);
+    ChartHighlight *highlight = [[ChartHighlight alloc] init];
+    [highlight setDrawX:x];
+    [highlight setDrawY:y];
+    return highlight;
+
+}
+
 - (UILabel *)markY{
     if (!_markY) {
         _markY = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 35, 25)];
@@ -42,13 +52,16 @@
 
 - (void)configChartViewWith:(CombinedChartView *)chartView {
     
+    chartView.highlightPerTapEnabled = YES;
+    chartView.highlightPerDragEnabled = YES;
+    chartView.highlighter = self;
     chartView.delegate = self;
     chartView.noDataText = @"";
     chartView.scaleYEnabled = NO;
     chartView.chartDescription.enabled = NO;
     chartView.drawGridBackgroundEnabled = NO;
     chartView.drawBarShadowEnabled = NO;
-    chartView.highlightFullBarEnabled = NO;
+//    chartView.highlightFullBarEnabled = YES;
     chartView.drawOrder = @[
                              @(CombinedChartDrawOrderBar),
                              @(CombinedChartDrawOrderCandle),
@@ -62,9 +75,7 @@
     ChartLegend *l = chartView.legend;
     l.enabled = NO;
     
-    chartView.rightAxis.enabled = NO;
     chartView.xAxis.enabled = NO;
-    
     
     //    l.wordWrapEnabled = YES;
     //    l.horizontalAlignment = ChartLegendHorizontalAlignmentCenter;
@@ -72,14 +83,17 @@
     //    l.orientation = ChartLegendOrientationHorizontal;
     //    l.drawInside = NO;
     //
-    //    ChartYAxis *rightAxis = _chartView.rightAxis;
-    //    rightAxis.drawGridLinesEnabled = NO;
-    //    rightAxis.axisMinimum = 0.0; // this replaces startAtZero = YES
-    //
     ChartYAxis *leftAxis = chartView.leftAxis;
     leftAxis.drawGridLinesEnabled = NO;
     leftAxis.labelCount = 4;
     leftAxis.labelPosition = YAxisLabelPositionInsideChart;
+    
+    ChartYAxis *rightAxis = chartView.rightAxis;
+    rightAxis.drawGridLinesEnabled = NO;
+    rightAxis.labelCount = 4;
+    rightAxis.labelPosition = YAxisLabelPositionInsideChart;
+    //rightAxis.axisMinimum = 0.0; // this replaces startAtZero = YES
+
     //
     //    ChartXAxis *xAxis = _chartView.xAxis;
     //    xAxis.labelPosition = XAxisLabelPositionBottom;
@@ -328,8 +342,6 @@
     
     [[AFHTTPSessionManager manager] GET:@"http://www.youbicaifu.com/index.php/home/tape/seleAdDayKline/type_id/17/code/601001" parameters:nil progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
         
-//        NSLog(@"%@",responseObject[@"data"][@"all_daykey"]);
-        
         NSArray *arr = responseObject[@"data"][@"all_daykey"];
         NSMutableArray *array = [NSMutableArray arrayWithCapacity:10];
         for (int i = 0; i < 30; i++) {
@@ -339,7 +351,7 @@
 
         //data.lineData = [self loadData:arr];
         //data.barData = [self loadBarChartData:arr];
-        data.candleData = [self loadCandleChartData:array];
+        data.candleData = [self loadCandleChartData:arr];
         
         _chartView.xAxis.axisMaximum = data.xMax + 0.25;
         _chartView.data = data;
@@ -349,8 +361,8 @@
         _chartView1.data = data;
         //[_chartView1 animateWithXAxisDuration:0.1];
         
-        [self setCustomScaleWith:array onChart:_chartView];
-        [self setCustomScaleWith:array onChart:_chartView1];
+        [self setCustomScaleWith:arr onChart:_chartView];
+        [self setCustomScaleWith:arr onChart:_chartView1];
 
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         
@@ -384,9 +396,11 @@
 #pragma mark - ChartViewDelegate
 - (void)chartValueSelected:(ChartViewBase *)chartView entry:(ChartDataEntry *)entry highlight:(ChartHighlight *)highlight {
     
-    [chartView getMarkerPositionWithHighlight:highlight];
-    
+    [_chartView highlightValue:highlight];
+    [_chartView1 highlightValue:highlight];
+
     _markY.text = [NSString stringWithFormat:@"%ld%%",(NSInteger)entry.y];
+    
     
     // 点击 表格移动 至中心
 //    [_chartView1 centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:0.3];
@@ -414,6 +428,9 @@
 }
 - (void)chartValueNothingSelected:(ChartViewBase * __nonnull)chartView
 {
+    
+    [_chartView highlightValue:nil];
+    [_chartView1 highlightValue:nil];
     
     NSLog(@"chartValueNothingSelected");
 }

@@ -28,7 +28,13 @@
 @implementation LineViewController
 
 - (NSString *)stringForValue:(double)value axis:(ChartAxisBase *)axis {
-    return self.date[(int)value % self.date.count];
+    if (axis == _chartView.xAxis) {
+        return self.date[(int)value % self.date.count];
+    } else if (axis == _chartView.leftAxis) {
+        return @"left";
+    }else {
+        return @"right";
+    }
 }
 
 - (void)loadData:(NSArray *)array {
@@ -321,12 +327,13 @@
     leftAxis.drawGridLinesEnabled = NO;
     leftAxis.labelCount = 4;
     leftAxis.labelPosition = YAxisLabelPositionInsideChart;
-    
+    leftAxis.valueFormatter = self;
+
     ChartYAxis *rightAxis = _chartView.rightAxis;
     rightAxis.drawGridLinesEnabled = NO;
     rightAxis.labelCount = 4;
     rightAxis.labelPosition = YAxisLabelPositionInsideChart;
-    
+    rightAxis.valueFormatter = self;
 }
 
 - (void)config_xAxis {
