@@ -12,7 +12,8 @@
 
 #define ITEM_COUNT 12
 
-@interface AllChartsViewController () <ChartViewDelegate, IChartAxisValueFormatter,IChartHighlighter>
+//IChartHighlighter
+@interface AllChartsViewController () <ChartViewDelegate, IChartAxisValueFormatter>
 {
     NSArray<NSString *> *months;
 }
@@ -28,15 +29,15 @@
 
 @implementation AllChartsViewController
 
-- (ChartHighlight *)getHighlightWithX:(CGFloat)x y:(CGFloat)y {
-
-    NSLog(@"*  %f",x);
-    ChartHighlight *highlight = [[ChartHighlight alloc] init];
-    [highlight setDrawX:x];
-    [highlight setDrawY:y];
-    return highlight;
-
-}
+//- (ChartHighlight *)getHighlightWithX:(CGFloat)x y:(CGFloat)y {
+//
+//    NSLog(@"*  %f",x);
+//    ChartHighlight *highlight = [[ChartHighlight alloc] init];
+//    [highlight setDrawX:x];
+//    [highlight setDrawY:y];
+//    return highlight;
+//
+//}
 
 - (UILabel *)markY{
     if (!_markY) {
@@ -54,7 +55,7 @@
     
     chartView.highlightPerTapEnabled = YES;
     chartView.highlightPerDragEnabled = YES;
-    chartView.highlighter = self;
+//    chartView.highlighter = self;
     chartView.delegate = self;
     chartView.noDataText = @"";
     chartView.scaleYEnabled = NO;
