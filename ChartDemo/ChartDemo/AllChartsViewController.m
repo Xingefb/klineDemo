@@ -13,9 +13,11 @@
 #define ITEM_COUNT 12
 
 //IChartHighlighter
-@interface AllChartsViewController () <ChartViewDelegate, IChartAxisValueFormatter>
+@interface AllChartsViewController () <ChartViewDelegate, IChartAxisValueFormatter,UIGestureRecognizerDelegate>
 {
     NSArray<NSString *> *months;
+    UIPanGestureRecognizer *pan;
+
 }
 
 @property (weak, nonatomic) IBOutlet CombinedChartView *chartView1;
@@ -49,6 +51,12 @@
         _markY.backgroundColor = [UIColor grayColor];
     }
     return _markY;
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer * _Nonnull)gestureRecognizer {
+    NSLog(@"yes  = %ld",(long)gestureRecognizer.state);
+
+    return [_chartView gestureRecognizerShouldBegin:gestureRecognizer];
 }
 
 - (void)configChartViewWith:(CombinedChartView *)chartView {
@@ -104,6 +112,19 @@
 //    ChartViewPortHandler *portHandler = chartView.viewPortHandler;
 //    [portHandler setMaximumScaleX:3];
 //    [portHandler setChartDimensWithWidth:200 height:100];
+    
+    
+    NSArray *recognizers = [chartView gestureRecognizers];
+    NSLog(@"recognizers are %lu",(unsigned long)recognizers.count);
+    for (UIGestureRecognizer *gr in recognizers) {
+        if ([gr isKindOfClass:[UIPanGestureRecognizer class]]) {
+            NSLog(@"recognizer  %@",gr);
+            pan = (UIPanGestureRecognizer *)gr;
+        }
+    }
+    
+    pan.delegate = self;
+    
 }
 
 - (void)viewDidLoad
@@ -158,6 +179,8 @@
     
     CandleChartDataSet *set1 = [[CandleChartDataSet alloc] initWithValues:data label:nil];
     set1.axisDependency = AxisDependencyLeft;
+    
+    set1.drawHorizontalHighlightIndicatorEnabled = NO;
     
     set1.shadowColor = UIColor.darkGrayColor;
     set1.shadowWidth = 0.5;
@@ -221,10 +244,6 @@
     NSArray *tmp = [[array reverseObjectEnumerator] allObjects];
     
     self.data = [NSMutableArray arrayWithArray:tmp];
-
-    CGFloat maxValue = [[tmp valueForKeyPath:@"@max.floatValue"] floatValue];
-    //CGFloat minValue = [[tmp valueForKeyPath:@"@min.floatValue"] floatValue];
-    NSLog(@" max %f",maxValue);
     
     NSMutableArray *data = [NSMutableArray arrayWithCapacity:10];
     NSMutableArray *data1 = [NSMutableArray arrayWithCapacity:10];
@@ -401,8 +420,7 @@
     [_chartView1 highlightValue:highlight];
 
     _markY.text = [NSString stringWithFormat:@"%ld%%",(NSInteger)entry.y];
-    
-    
+    NSLog(@"*** %ld",(long)pan.state);
     // 点击 表格移动 至中心
 //    [_chartView1 centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:0.3];
 //    [_chartView centerViewToAnimatedWithXValue:entry.x yValue:entry.y axis:[chartView.data getDataSetByIndex:highlight.dataSetIndex].axisDependency duration:0.3];
@@ -420,12 +438,13 @@
 
 - (void)chartTranslated:(ChartViewBase * _Nonnull)chartView dX:(CGFloat)dX dY:(CGFloat)dY {
 
+    
+    
     if (chartView == _chartView1) {
         [self scrollWithChartView:chartView andType:YES];
     }else {
         [self scrollWithChartView:chartView andType:NO];
     }
-    NSLog(@"%f",dX);
 }
 - (void)chartValueNothingSelected:(ChartViewBase * __nonnull)chartView
 {
