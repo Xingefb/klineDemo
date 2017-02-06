@@ -341,7 +341,7 @@
     [_chartView zoomWithScaleX:scaleX scaleY:scaleY x:xValue y:yValue];
     CGAffineTransform matrix = portHandler.touchMatrix;
     [portHandler setZoomWithScaleX:scaleX scaleY:scaleY x:xValue y:yValue];
-    [_chartView.viewPortHandler refreshWithNewMatrix:matrix chart:chartView invalidate:YES];
+    [_chartView.viewPortHandler refreshWithNewMatrix:matrix chart:chartView invalidate:NO];
     
 }
 

@@ -164,7 +164,7 @@
             
         }
         
-        //MARK: J line
+        // MARK: J line
         NSString *jNum1 = [ComputeTool computeWithOpration:@"*" leftNumber:@"3" rightNumber:kValue type:NSRoundUp];
         NSString *jNum2 = [ComputeTool computeWithOpration:@"*" leftNumber:@"2" rightNumber:dValue type:NSRoundUp];
         jValue = [ComputeTool computeWithOpration:@"-" leftNumber:jNum1 rightNumber:jNum2 type:NSRoundUp];
@@ -181,16 +181,16 @@
         
         [self.date addObject:[NSString stringWithFormat:@"%@",dic[@"Data"]]];
         
-        // MA5
+        // MARK: MA5
         [ma5TmpData addObject:close];
         
         dataMA5 = [self configMANumbersWith:i andTmpArray:ma5TmpData andMAData:dataMA5 andMANumber:@"5"];
         
-        // MA10
+        // MARK: MA10
         [ma10TmpData addObject:close];
         dataMA10 = [self configMANumbersWith:i andTmpArray:ma10TmpData andMAData:dataMA10 andMANumber:@"10"];
         
-        // MA30
+        // MARK: MA30
         [ma30TmpData addObject:close];
         dataMA30 = [self configMANumbersWith:i andTmpArray:ma30TmpData andMAData:dataMA30 andMANumber:@"30"];
         
@@ -227,6 +227,7 @@
     LineChartDataSet *setMACD = [self configWith:dataMACD andColor:[UIColor orangeColor]];
     
     LineChartData *chartdata = [[LineChartData alloc] initWithDataSets:@[setK,setD,setJ,setDIF,setDEA,setMACD,setMA5,setMA10,setMA30]];
+    
     _chartView.data = chartdata;
     [_chartView animateWithXAxisDuration:0.3];
     
