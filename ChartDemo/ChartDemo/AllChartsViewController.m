@@ -232,6 +232,7 @@
     BarChartDataSet *set = [[BarChartDataSet alloc] initWithValues:data label:nil];
     set.drawValuesEnabled = NO;//禁止柱形图 数字的显示
     set.colors = colors;
+    set.highlightEnabled = NO;
     
     BarChartData *chartdata = [[BarChartData alloc] initWithDataSet:set];
     return chartdata;
@@ -369,8 +370,8 @@
         }
         CombinedChartData *data = [[CombinedChartData alloc] init];
 
-        //data.lineData = [self loadData:arr];
-        //data.barData = [self loadBarChartData:arr];
+//        data.lineData = [self loadData:arr];
+        data.barData = [self loadBarChartData:arr];
         data.candleData = [self loadCandleChartData:arr];
         
         _chartView.xAxis.axisMaximum = data.xMax + 0.25;
