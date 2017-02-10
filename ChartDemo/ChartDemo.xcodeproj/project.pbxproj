@@ -21,6 +21,7 @@
 		40486F401E34450F00725E37 /* KChartsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 40486F3F1E34450F00725E37 /* KChartsView.m */; };
 		408D9B4C1E2F5A720063672A /* BarDemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 408D9B4B1E2F5A720063672A /* BarDemoViewController.m */; };
 		40CDF88B1E31A5E300BCF666 /* ComputeTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 40CDF88A1E31A5E300BCF666 /* ComputeTool.m */; };
+		40D52CAB1E4DC33900287382 /* RevealServer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40D52CAA1E4DC33900287382 /* RevealServer.framework */; };
 		53C637E089411E5B7B2C2A5F /* Pods_ChartDemoTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B633F0E184AC2D68B831340C /* Pods_ChartDemoTests.framework */; };
 		BABB64D28DBB1FE79235F22F /* Pods_ChartDemoUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4512E4799BB611A711946438 /* Pods_ChartDemoUITests.framework */; };
 		EDA8FF4ED6D7E0A2E63D14AA /* Pods_ChartDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD13FDE43FD7DA9B0B7826EA /* Pods_ChartDemo.framework */; };
@@ -73,6 +74,7 @@
 		408D9B4B1E2F5A720063672A /* BarDemoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BarDemoViewController.m; sourceTree = "<group>"; };
 		40CDF8891E31A5E300BCF666 /* ComputeTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ComputeTool.h; sourceTree = "<group>"; };
 		40CDF88A1E31A5E300BCF666 /* ComputeTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ComputeTool.m; sourceTree = "<group>"; };
+		40D52CAA1E4DC33900287382 /* RevealServer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = RevealServer.framework; sourceTree = "<group>"; };
 		4512E4799BB611A711946438 /* Pods_ChartDemoUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ChartDemoUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		51E128DA8D2E01CF9CE4E718 /* Pods-ChartDemoTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChartDemoTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ChartDemoTests/Pods-ChartDemoTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5EAD40AE131E4A8F3AEBB4C2 /* Pods-ChartDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChartDemo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ChartDemo/Pods-ChartDemo.debug.xcconfig"; sourceTree = "<group>"; };
@@ -88,6 +90,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40D52CAB1E4DC33900287382 /* RevealServer.framework in Frameworks */,
 				EDA8FF4ED6D7E0A2E63D14AA /* Pods_ChartDemo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -146,6 +149,7 @@
 		40447C0B1E2DAA9400364382 /* ChartDemo */ = {
 			isa = PBXGroup;
 			children = (
+				40D52CAA1E4DC33900287382 /* RevealServer.framework */,
 				40447C0F1E2DAA9400364382 /* AppDelegate.h */,
 				40447C101E2DAA9400364382 /* AppDelegate.m */,
 				40447C121E2DAA9400364382 /* ViewController.h */,
@@ -646,6 +650,10 @@
 			baseConfigurationReference = 5EAD40AE131E4A8F3AEBB4C2 /* Pods-ChartDemo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ChartDemo",
+				);
 				INFOPLIST_FILE = ChartDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -659,6 +667,10 @@
 			baseConfigurationReference = 83F5A23E8A404A0537EE0867 /* Pods-ChartDemo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ChartDemo",
+				);
 				INFOPLIST_FILE = ChartDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
